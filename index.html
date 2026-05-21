@@ -153,6 +153,9 @@
         ];
         // ================================================
 
+        // Get the base path (for GitHub Pages support)
+        const baseURL = window.location.pathname.split('/').slice(0, -1).join('/');
+
         // Populate dropdown with notebooks
         function initializeNotebooks() {
             const select = document.getElementById('notebookSelect');
@@ -184,7 +187,7 @@
             document.getElementById('notebookSelect').value = index;
             
             // Update URL without reloading page
-            const newURL = `/${notebook.urlPath}`;
+            const newURL = `${baseURL}/${notebook.urlPath}`;
             window.history.pushState({notebookIndex: index}, notebook.title, newURL);
             
             // Update page title
@@ -202,7 +205,9 @@
             let notebookIndex = 0; // Default to first notebook
             
             for (let i = 0; i < notebooks.length; i++) {
-                if (currentPath === `/${notebooks[i].urlPath}` || currentPath === `/${notebooks[i].urlPath}/`) {
+                // Check for exact matches with the notebook's URL path
+                const notebookPath = notebooks[i].urlPath;
+                if (currentPath.includes(notebookPath)) {
                     notebookIndex = i;
                     break;
                 }
