@@ -53,11 +53,24 @@
             background-color: #000;
             padding: 20px;
         }
-        canvas {
-            display: block;
+        .pdf-page {
+            position: relative;
             margin: 20px auto;
             background: white;
             box-shadow: 0 2px 8px rgba(0,0,0,0.3);
+            display: inline-block;
+        }
+        canvas {
+            display: block;
+            width: 100%;
+            height: auto;
+        }
+        .pdf-page a {
+            position: absolute;
+            opacity: 0;
+        }
+        .pdf-page a:hover {
+            outline: 2px solid blue;
         }
     </style>
 </head>
@@ -77,11 +90,9 @@
 
         const pdfUrl = './7701Y State-compressed.pdf';
         const viewer = document.getElementById('pdf-viewer');
-        let isRendering = false;
         let visiblePages = new Set();
 
         pdfjsLib.getDocument(pdfUrl).promise.then(pdf => {
-            // Render pages as they come into view
             const observerOptions = {
                 root: viewer,
                 rootMargin: '100px',
@@ -100,20 +111,22 @@
                 });
             }, observerOptions);
 
-            // Create placeholder canvases for all pages
             for (let pageNum = 1; pageNum <= pdf.numPages; pageNum++) {
+                const pageDiv = document.createElement('div');
+                pageDiv.className = 'pdf-page';
+                pageDiv.dataset.page = pageNum;
+                
                 const canvas = document.createElement('canvas');
-                canvas.dataset.page = pageNum;
-                canvas.style.background = '#ccc';
-                canvas.width = 800;
-                canvas.height = 600;
-                viewer.appendChild(canvas);
-                observer.observe(canvas);
+                pageDiv.appendChild(canvas);
+                
+                viewer.appendChild(pageDiv);
+                observer.observe(pageDiv);
             }
 
-            function renderPage(pdf, pageNum, canvas) {
+            function renderPage(pdf, pageNum, pageDiv) {
                 pdf.getPage(pageNum).then(page => {
                     const viewport = page.getViewport({ scale: 1.5 });
+                    const canvas = pageDiv.querySelector('canvas');
                     canvas.width = viewport.width;
                     canvas.height = viewport.height;
 
@@ -121,6 +134,26 @@
                     page.render({
                         canvasContext: context,
                         viewport: viewport
+                    }).promise.then(() => {
+                        // Render annotations (links, etc.)
+                        return page.getAnnotations();
+                    }).then(annotations => {
+                        annotations.forEach(annotation => {
+                            if (annotation.subtype === 'Link') {
+                                const rect = annotation.rect;
+                                const viewport = page.getViewport({ scale: 1.5 });
+                                
+                                const link = document.createElement('a');
+                                link.href = annotation.url || '#';
+                                link.target = '_blank';
+                                link.style.left = (rect[0] * 1.5) + 'px';
+                                link.style.top = (viewport.height - rect[3] * 1.5) + 'px';
+                                link.style.width = ((rect[2] - rect[0]) * 1.5) + 'px';
+                                link.style.height = ((rect[3] - rect[1]) * 1.5) + 'px';
+                                
+                                pageDiv.appendChild(link);
+                            }
+                        });
                     });
                 });
             }
