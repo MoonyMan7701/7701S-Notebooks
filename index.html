@@ -135,18 +135,21 @@
         // ===== CONFIGURATION - Add/edit notebooks here =====
         const notebooks = [
             {
+                id: '7701y',
                 title: '7701Y State',
                 file: './pdfs/7701Y%20State-compressed.pdf',
                 lastUpdated: '2026-05-21T19:01:59Z'
             },
             {
+                id: '7701s',
                 title: '7701S Notebook',
                 file: './pdfs/7701S%205-21-26-compressed.pdf',
                 lastUpdated: '2026-05-21T19:02:49Z'
             }
             // Add more notebooks like this:
             // {
-            //     title: 'Notebook Name',
+            //     id: 'notebook-name',
+            //     title: 'Notebook Display Name',
             //     file: './path/to/filename.pdf',
             //     lastUpdated: 'YYYY-MM-DDTHH:MM:SSZ'
             // }
@@ -157,10 +160,13 @@
         function getNotebookFromURL() {
             const params = new URLSearchParams(window.location.search);
             const notebookParam = params.get('notebook');
-            const index = notebookParam ? parseInt(notebookParam) : 0;
             
-            // Return valid index or default to 0
-            return (index >= 0 && index < notebooks.length) ? index : 0;
+            if (notebookParam) {
+                // Find notebook by ID
+                const foundIndex = notebooks.findIndex(nb => nb.id === notebookParam.toLowerCase());
+                return foundIndex !== -1 ? foundIndex : 0;
+            }
+            return 0;
         }
 
         // Populate dropdown with notebooks
@@ -224,9 +230,10 @@
         // Event listener for dropdown change - update URL query parameter
         document.getElementById('notebookSelect').addEventListener('change', (e) => {
             const index = parseInt(e.target.value);
+            const notebookId = notebooks[index].id;
             loadNotebook(index);
             // Update URL without reloading
-            window.history.pushState({}, '', `?notebook=${index}`);
+            window.history.pushState({}, '', `?notebook=${notebookId}`);
         });
 
         // Initialize notebook list and load from URL
