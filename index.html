@@ -71,44 +71,43 @@
             display: block;
             margin-top: -90px;
         }
+        .error-message {
+            display: none;
+            color: #ff6b6b;
+            text-align: center;
+            padding: 20px;
+        }
     </style>
 </head>
 <body>
     <div class="container">
         <div class="header">
             <h1 id="pdfTitle">7701Y State</h1>
-            <a id="downloadBtn" href="./pdfs/7701Y State-compressed.pdf" download class="download-btn">Download PDF</a>
+            <a id="downloadBtn" href="./pdfs/7701Y%20State-compressed.pdf" download class="download-btn">Download PDF</a>
         </div>
         <div class="pdf-container">
-            <iframe id="pdfFrame" src="./pdfs/7701Y State-compressed.pdf"></iframe>
+            <iframe id="pdfFrame" src="./pdfs/7701Y%20State-compressed.pdf"></iframe>
+            <div class="error-message" id="errorMessage">Failed to load PDF. Please try downloading it instead.</div>
         </div>
     </div>
     <script>
-        // List of PDFs in the /pdfs directory (you can update this list manually when adding new PDFs)
-        const pdfList = [
-            '7701Y State-compressed.pdf',
-            // Add more PDFs here as you create them
-        ];
+        // Handle iframe load errors
+        const pdfFrame = document.getElementById('pdfFrame');
         
-        function loadLatestPDF() {
-            try {
-                if (pdfList.length > 0) {
-                    // Sort alphabetically and get the latest (last) PDF
-                    pdfList.sort();
-                    const latestPDF = pdfList[pdfList.length - 1];
-                    const pdfPath = './pdfs/' + latestPDF;
-                    const pdfName = latestPDF.replace(/\.[^/.]+$/, "");
-                    
-                    document.getElementById('pdfFrame').src = pdfPath;
-                    document.getElementById('pdfTitle').textContent = pdfName;
-                    document.getElementById('downloadBtn').href = pdfPath;
+        pdfFrame.addEventListener('error', function() {
+            console.error('Failed to load PDF in iframe');
+            document.getElementById('errorMessage').style.display = 'block';
+        });
+        
+        // Alternative: Try to load from raw GitHub URL if iframe fails
+        window.addEventListener('load', function() {
+            setTimeout(function() {
+                // If iframe failed to load, use GitHub raw content URL
+                if (!pdfFrame.src || pdfFrame.src.includes('about:blank')) {
+                    pdfFrame.src = 'https://raw.githubusercontent.com/MoonyMan7701/7701S-Notebook/main/pdfs/7701Y%20State-compressed.pdf';
                 }
-            } catch (error) {
-                console.log('Error loading PDF:', error);
-            }
-        }
-        
-        window.addEventListener('load', loadLatestPDF);
+            }, 2000);
+        });
     </script>
 </body>
 </html>
