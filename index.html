@@ -52,13 +52,16 @@
             overflow: auto;
             background-color: #000;
             padding: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
         }
         .pdf-page {
             position: relative;
-            margin: 20px auto;
+            margin: 20px 0;
             background: white;
             box-shadow: 0 2px 8px rgba(0,0,0,0.3);
-            display: inline-block;
+            display: block;
             scroll-margin-top: 80px;
         }
         canvas {
@@ -94,6 +97,7 @@
         const viewer = document.getElementById('pdf-viewer');
         let visiblePages = new Set();
         let pdfDoc = null;
+        let pageElements = {};
 
         pdfjsLib.getDocument(pdfUrl).promise.then(pdf => {
             pdfDoc = pdf;
@@ -125,6 +129,7 @@
                 pageDiv.appendChild(canvas);
                 
                 viewer.appendChild(pageDiv);
+                pageElements[pageNum] = pageDiv;
                 observer.observe(pageDiv);
             }
 
@@ -182,15 +187,40 @@
             }
 
             function resolveLink(dest) {
-                if (!dest || !dest[0]) return;
+                if (!dest || dest.length === 0) return;
                 
                 const pageRef = dest[0];
-                pdfDoc.getPageIndex(pageRef).then(pageNum => {
-                    const pageElement = document.getElementById('page-' + (pageNum + 1));
-                    if (pageElement) {
-                        pageElement.scrollIntoView({ behavior: 'smooth', block: 'start' });
-                    }
-                });
+                
+                // Get page index from reference
+                let pageIndex = null;
+                if (typeof pageRef === 'number') {
+                    pageIndex = pageRef;
+                } else if (pageRef && typeof pageRef === 'object') {
+                    pdfDoc.getPageIndex(pageRef).then(idx => {
+                        scrollToPage(idx + 1);
+                    }).catch(() => {
+                        // Fallback: try to find page by reference
+                        for (let i = 1; i <= pdfDoc.numPages; i++) {
+                            pdfDoc.getPage(i).then(page => {
+                                if (page.ref === pageRef) {
+                                    scrollToPage(i);
+                                }
+                            });
+                        }
+                    });
+                    return;
+                }
+                
+                if (pageIndex !== null) {
+                    scrollToPage(pageIndex + 1);
+                }
+            }
+
+            function scrollToPage(pageNum) {
+                const pageElement = pageElements[pageNum];
+                if (pageElement) {
+                    pageElement.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                }
             }
         });
     </script>
