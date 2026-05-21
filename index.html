@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>7701Y State</title>
+    <title>7701 Notebooks</title>
     <link href="https://fonts.googleapis.com/css2?family=Lexend:wght@400;700&display=swap" rel="stylesheet">
     <style>
         * {
@@ -136,12 +136,16 @@
         const notebooks = [
             {
                 title: '7701Y State',
-                file: '7701Y%20State-compressed.pdf'
+                file: './pdfs/7701Y%20State-compressed.pdf'
+            },
+            {
+                title: '7701S State',
+                file: './pdfs/7701S%20State-compressed.pdf'  // Add the 7701S notebook file here
             }
             // Add more notebooks like this:
             // {
             //     title: 'Notebook Name',
-            //     file: 'filename.pdf'
+            //     file: './path/to/filename.pdf'
             // }
         ];
         // ================================================
@@ -161,16 +165,14 @@
         // Load notebook when selected
         function loadNotebook(index) {
             const notebook = notebooks[index];
-            const encodedFile = notebook.file.replace(/ /g, '%20');
             
             // Update title and date
             document.getElementById('pdfTitle').textContent = notebook.title;
             updateDate();
             
             // Update PDF source
-            const pdfPath = `./pdfs/${encodedFile}`;
-            document.getElementById('pdfFrame').src = pdfPath;
-            document.getElementById('downloadBtn').href = pdfPath;
+            document.getElementById('pdfFrame').src = notebook.file;
+            document.getElementById('downloadBtn').href = notebook.file;
             
             // Reset error message
             document.getElementById('errorMessage').style.display = 'none';
@@ -220,7 +222,8 @@
             setTimeout(function() {
                 // If iframe failed to load, use GitHub raw content URL
                 if (!pdfFrame.src || pdfFrame.src.includes('about:blank')) {
-                    pdfFrame.src = 'https://raw.githubusercontent.com/MoonyMan7701/7701S-Notebook/main/pdfs/7701Y%20State-compressed.pdf';
+                    const currentNotebook = notebooks[document.getElementById('notebookSelect').value];
+                    pdfFrame.src = 'https://raw.githubusercontent.com/MoonyMan7701/7701S-Notebook/main/' + currentNotebook.file.replace('./', '');
                 }
             }, 2000);
         });
