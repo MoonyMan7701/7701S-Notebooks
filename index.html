@@ -25,7 +25,7 @@
             background-color: #333;
             color: white;
             box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-            z-index: 10;
+            z-index: 100;
             position: relative;
         }
         h1 {
@@ -58,16 +58,7 @@
             height: 100%;
             border: none;
             display: block;
-        }
-        .toolbar-cover {
-            position: absolute;
-            top: 0;
-            left: 0;
-            right: 0;
-            height: 40px;
-            background-color: #fff;
-            z-index: 5;
-            pointer-events: none;
+            margin-top: -40px;
         }
     </style>
 </head>
@@ -78,7 +69,6 @@
             <a href="./7701Y State-compressed.pdf" download class="download-btn">Download PDF</a>
         </div>
         <div class="pdf-container">
-            <div class="toolbar-cover"></div>
             <iframe src="./7701Y State-compressed.pdf"></iframe>
         </div>
     </div>
