@@ -116,7 +116,7 @@
     <div class="container">
         <div class="header">
             <div class="title-container">
-                <h1 id="pdfTitle">7701Y State</h1>
+                <h1 id="pdfTitle">7701 Notebook</h1>
                 <span class="upload-date" id="uploadDate"></span>
             </div>
             <div class="controls">
@@ -135,17 +135,20 @@
         // ===== CONFIGURATION - Add/edit notebooks here =====
         const notebooks = [
             {
-                title: '7701Y State Notebook',
-                file: './pdfs/7701Y%20State-compressed.pdf'
+                title: '7701Y State',
+                file: './pdfs/7701Y%20State-compressed.pdf',
+                urlPath: '7701Y-State'
             },
             {
                 title: '7701S Notebook',
-                file: './pdfs/7701S%205-21-26-compressed.pdf'  // Add the 7701S notebook file here
+                file: './pdfs/7701S%205-21-26-compressed.pdf',
+                urlPath: '7701S-Notebook'
             }
             // Add more notebooks like this:
             // {
             //     title: 'Notebook Name',
-            //     file: './path/to/filename.pdf'
+            //     file: './path/to/filename.pdf',
+            //     urlPath: 'url-path-name'
             // }
         ];
         // ================================================
@@ -160,13 +163,16 @@
                 option.textContent = notebook.title;
                 select.appendChild(option);
             });
+            
+            // Load notebook from URL on page load
+            loadNotebookFromURL();
         }
 
-        // Load notebook when selected
+        // Load notebook by index
         function loadNotebook(index) {
             const notebook = notebooks[index];
             
-            // Update title and date
+            // Update title
             document.getElementById('pdfTitle').textContent = notebook.title;
             updateDate();
             
@@ -174,8 +180,35 @@
             document.getElementById('pdfFrame').src = notebook.file;
             document.getElementById('downloadBtn').href = notebook.file;
             
+            // Update dropdown selection
+            document.getElementById('notebookSelect').value = index;
+            
+            // Update URL without reloading page
+            const newURL = `/${notebook.urlPath}`;
+            window.history.pushState({notebookIndex: index}, notebook.title, newURL);
+            
+            // Update page title
+            document.title = `${notebook.title} - 7701 Notebooks`;
+            
             // Reset error message
             document.getElementById('errorMessage').style.display = 'none';
+        }
+
+        // Load notebook from current URL
+        function loadNotebookFromURL() {
+            const currentPath = window.location.pathname;
+            
+            // Find matching notebook by URL path
+            let notebookIndex = 0; // Default to first notebook
+            
+            for (let i = 0; i < notebooks.length; i++) {
+                if (currentPath === `/${notebooks[i].urlPath}` || currentPath === `/${notebooks[i].urlPath}/`) {
+                    notebookIndex = i;
+                    break;
+                }
+            }
+            
+            loadNotebook(notebookIndex);
         }
 
         // Update upload date and time
@@ -198,6 +231,15 @@
         // Event listener for dropdown change
         document.getElementById('notebookSelect').addEventListener('change', (e) => {
             loadNotebook(parseInt(e.target.value));
+        });
+
+        // Handle browser back/forward buttons
+        window.addEventListener('popstate', (e) => {
+            if (e.state && typeof e.state.notebookIndex === 'number') {
+                loadNotebook(e.state.notebookIndex);
+            } else {
+                loadNotebookFromURL();
+            }
         });
 
         // Display upload date and time on load
