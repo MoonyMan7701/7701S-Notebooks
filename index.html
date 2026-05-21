@@ -216,7 +216,7 @@
             loadNotebook(notebookIndex);
         }
 
-        // Update upload date and time
+        // Update upload date and time - STATIC (no continuous update)
         function updateDate() {
             const now = new Date();
             const formattedDate = now.toLocaleDateString('en-US', { 
@@ -230,7 +230,7 @@
                 second: '2-digit',
                 hour12: true
             });
-            document.getElementById('uploadDate').textContent = `(Uploaded: ${formattedDate} at ${formattedTime})`;
+            document.getElementById('uploadDate').textContent = `(Updated: ${formattedDate} at ${formattedTime})`;
         }
 
         // Event listener for dropdown change
@@ -247,11 +247,8 @@
             }
         });
 
-        // Display upload date and time on load
+        // Display upload date and time on load (REMOVED continuous update)
         updateDate();
-
-        // Update time every second
-        setInterval(updateDate, 1000);
 
         // Initialize notebook list
         initializeNotebooks();
