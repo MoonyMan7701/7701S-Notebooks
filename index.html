@@ -59,6 +59,7 @@
             background: white;
             box-shadow: 0 2px 8px rgba(0,0,0,0.3);
             display: inline-block;
+            scroll-margin-top: 80px;
         }
         canvas {
             display: block;
@@ -68,6 +69,7 @@
         .pdf-page a {
             position: absolute;
             opacity: 0;
+            cursor: pointer;
         }
         .pdf-page a:hover {
             outline: 2px solid blue;
@@ -91,8 +93,10 @@
         const pdfUrl = './7701Y State-compressed.pdf';
         const viewer = document.getElementById('pdf-viewer');
         let visiblePages = new Set();
+        let pdfDoc = null;
 
         pdfjsLib.getDocument(pdfUrl).promise.then(pdf => {
+            pdfDoc = pdf;
             const observerOptions = {
                 root: viewer,
                 rootMargin: '100px',
@@ -114,6 +118,7 @@
             for (let pageNum = 1; pageNum <= pdf.numPages; pageNum++) {
                 const pageDiv = document.createElement('div');
                 pageDiv.className = 'pdf-page';
+                pageDiv.id = 'page-' + pageNum;
                 pageDiv.dataset.page = pageNum;
                 
                 const canvas = document.createElement('canvas');
@@ -135,7 +140,6 @@
                         canvasContext: context,
                         viewport: viewport
                     }).promise.then(() => {
-                        // Render annotations (links, etc.)
                         return page.getAnnotations();
                     }).then(annotations => {
                         annotations.forEach(annotation => {
@@ -144,17 +148,48 @@
                                 const viewport = page.getViewport({ scale: 1.5 });
                                 
                                 const link = document.createElement('a');
-                                link.href = annotation.url || '#';
-                                link.target = '_blank';
                                 link.style.left = (rect[0] * 1.5) + 'px';
                                 link.style.top = (viewport.height - rect[3] * 1.5) + 'px';
                                 link.style.width = ((rect[2] - rect[0]) * 1.5) + 'px';
                                 link.style.height = ((rect[3] - rect[1]) * 1.5) + 'px';
                                 
+                                // Handle internal links
+                                if (annotation.dest) {
+                                    link.href = '#';
+                                    link.onclick = (e) => {
+                                        e.preventDefault();
+                                        handleInternalLink(annotation.dest);
+                                    };
+                                } else if (annotation.url) {
+                                    // External links
+                                    link.href = annotation.url;
+                                    link.target = '_blank';
+                                }
+                                
                                 pageDiv.appendChild(link);
                             }
                         });
                     });
+                });
+            }
+
+            function handleInternalLink(dest) {
+                if (typeof dest === 'string') {
+                    pdfDoc.getDestination(dest).then(resolveLink);
+                } else {
+                    resolveLink(dest);
+                }
+            }
+
+            function resolveLink(dest) {
+                if (!dest || !dest[0]) return;
+                
+                const pageRef = dest[0];
+                pdfDoc.getPageIndex(pageRef).then(pageNum => {
+                    const pageElement = document.getElementById('page-' + (pageNum + 1));
+                    if (pageElement) {
+                        pageElement.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                    }
                 });
             }
         });
