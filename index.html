@@ -156,6 +156,9 @@
         // Get the base path (for GitHub Pages support)
         const baseURL = window.location.pathname.split('/').slice(0, -1).join('/');
 
+        // Store the initial upload timestamp once
+        let uploadTimestamp = null;
+
         // Populate dropdown with notebooks
         function initializeNotebooks() {
             const select = document.getElementById('notebookSelect');
@@ -177,7 +180,6 @@
             
             // Update title
             document.getElementById('pdfTitle').textContent = notebook.title;
-            updateDate();
             
             // Update PDF source
             document.getElementById('pdfFrame').src = notebook.file;
@@ -216,21 +218,24 @@
             loadNotebook(notebookIndex);
         }
 
-        // Update upload date and time - STATIC (no continuous update)
-        function updateDate() {
-            const now = new Date();
-            const formattedDate = now.toLocaleDateString('en-US', { 
-                year: 'numeric', 
-                month: 'short', 
-                day: 'numeric' 
-            });
-            const formattedTime = now.toLocaleTimeString('en-US', { 
-                hour: '2-digit', 
-                minute: '2-digit',
-                second: '2-digit',
-                hour12: true
-            });
-            document.getElementById('uploadDate').textContent = `(Updated: ${formattedDate} at ${formattedTime})`;
+        // Display the static upload timestamp once
+        function displayStaticTimestamp() {
+            if (uploadTimestamp === null) {
+                const now = new Date();
+                const formattedDate = now.toLocaleDateString('en-US', { 
+                    year: 'numeric', 
+                    month: 'short', 
+                    day: 'numeric' 
+                });
+                const formattedTime = now.toLocaleTimeString('en-US', { 
+                    hour: '2-digit', 
+                    minute: '2-digit',
+                    second: '2-digit',
+                    hour12: true
+                });
+                uploadTimestamp = `(Updated: ${formattedDate} at ${formattedTime})`;
+            }
+            document.getElementById('uploadDate').textContent = uploadTimestamp;
         }
 
         // Event listener for dropdown change
@@ -247,8 +252,8 @@
             }
         });
 
-        // Display upload date and time on load (REMOVED continuous update)
-        updateDate();
+        // Display upload date ONCE on page load
+        displayStaticTimestamp();
 
         // Initialize notebook list
         initializeNotebooks();
