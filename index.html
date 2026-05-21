@@ -1,6 +1,8 @@
 <!DOCTYPE html>
 <html>
 <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>7701 Notebooks</title>
     <link href="https://fonts.googleapis.com/css2?family=Lexend:wght@400;700&display=swap" rel="stylesheet">
     <style>
@@ -109,6 +111,37 @@
             color: #ff6b6b;
             text-align: center;
             padding: 20px;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 20px;
+        }
+        .mobile-message {
+            display: none;
+            color: #aaa;
+            text-align: center;
+            padding: 40px 20px;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 20px;
+        }
+        .mobile-message p {
+            font-size: 16px;
+        }
+        @media (max-width: 768px) {
+            .title-container {
+                min-width: 100%;
+            }
+            .controls {
+                width: 100%;
+                justify-content: flex-start;
+            }
+            .header {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 10px;
+            }
         }
     </style>
 </head>
@@ -128,7 +161,14 @@
         </div>
         <div class="pdf-container">
             <iframe id="pdfFrame" src="./pdfs/7701Y%20State-compressed.pdf"></iframe>
-            <div class="error-message" id="errorMessage">Failed to load PDF. Please try downloading it instead.</div>
+            <div class="mobile-message" id="mobileMessage">
+                <p>📱 PDF viewer not supported on mobile</p>
+                <a id="mobileDlBtn" href="./pdfs/7701Y%20State-compressed.pdf" download class="download-btn">Download PDF</a>
+            </div>
+            <div class="error-message" id="errorMessage">
+                <p>Failed to load PDF. Please try downloading it instead.</p>
+                <a id="errorDlBtn" href="./pdfs/7701Y%20State-compressed.pdf" download class="download-btn">Download PDF</a>
+            </div>
         </div>
     </div>
     <script>
@@ -155,6 +195,11 @@
             // }
         ];
         // ================================================
+
+        // Check if device is mobile
+        function isMobile() {
+            return /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+        }
 
         // Get notebook from URL query parameter
         function getNotebookFromURL() {
@@ -194,6 +239,8 @@
             // Update PDF source
             document.getElementById('pdfFrame').src = notebook.file;
             document.getElementById('downloadBtn').href = notebook.file;
+            document.getElementById('mobileDlBtn').href = notebook.file;
+            document.getElementById('errorDlBtn').href = notebook.file;
             
             // Update dropdown selection
             document.getElementById('notebookSelect').value = index;
@@ -201,8 +248,17 @@
             // Update page title
             document.title = `${notebook.title} - 7701 Notebooks`;
             
-            // Reset error message
+            // Reset error messages
             document.getElementById('errorMessage').style.display = 'none';
+            document.getElementById('mobileMessage').style.display = 'none';
+            
+            // Show mobile message if on mobile
+            if (isMobile()) {
+                document.getElementById('mobileMessage').style.display = 'flex';
+                document.getElementById('pdfFrame').style.display = 'none';
+            } else {
+                document.getElementById('pdfFrame').style.display = 'block';
+            }
         }
 
         // Display the update date - static, no API calls
@@ -241,23 +297,26 @@
         const notebookIndex = getNotebookFromURL();
         loadNotebook(notebookIndex);
 
-        // Handle iframe load errors
+        // Handle iframe load errors (desktop only)
         const pdfFrame = document.getElementById('pdfFrame');
         
         pdfFrame.addEventListener('error', function() {
             console.error('Failed to load PDF in iframe');
-            document.getElementById('errorMessage').style.display = 'block';
+            document.getElementById('errorMessage').style.display = 'flex';
+            document.getElementById('pdfFrame').style.display = 'none';
         });
         
         // Alternative: Try to load from raw GitHub URL if iframe fails
         window.addEventListener('load', function() {
-            setTimeout(function() {
-                // If iframe failed to load, use GitHub raw content URL
-                if (!pdfFrame.src || pdfFrame.src.includes('about:blank')) {
-                    const currentNotebook = notebooks[document.getElementById('notebookSelect').value];
-                    pdfFrame.src = 'https://raw.githubusercontent.com/MoonyMan7701/7701S-Notebook/main/' + currentNotebook.file.replace('./', '');
-                }
-            }, 2000);
+            if (!isMobile()) {
+                setTimeout(function() {
+                    // If iframe failed to load, use GitHub raw content URL
+                    if (!pdfFrame.src || pdfFrame.src.includes('about:blank')) {
+                        const currentNotebook = notebooks[document.getElementById('notebookSelect').value];
+                        pdfFrame.src = 'https://raw.githubusercontent.com/MoonyMan7701/7701S-Notebook/main/' + currentNotebook.file.replace('./', '');
+                    }
+                }, 2000);
+            }
         });
     </script>
 </body>
