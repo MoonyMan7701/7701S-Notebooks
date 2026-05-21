@@ -37,9 +37,19 @@
             flex-shrink: 0;
             height: 60px;
         }
+        .title-container {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
         h1 {
             margin: 0;
             font-size: 24px;
+        }
+        .upload-date {
+            font-size: 14px;
+            color: #aaa;
+            font-weight: 400;
         }
         .download-btn {
             background-color: #007bff;
@@ -82,7 +92,10 @@
 <body>
     <div class="container">
         <div class="header">
-            <h1 id="pdfTitle">7701Y State</h1>
+            <div class="title-container">
+                <h1 id="pdfTitle">7701Y State</h1>
+                <span class="upload-date" id="uploadDate"></span>
+            </div>
             <a id="downloadBtn" href="./pdfs/7701Y%20State-compressed.pdf" download class="download-btn">Download PDF</a>
         </div>
         <div class="pdf-container">
@@ -91,6 +104,15 @@
         </div>
     </div>
     <script>
+        // Display upload date
+        const uploadDate = new Date();
+        const formattedDate = uploadDate.toLocaleDateString('en-US', { 
+            year: 'numeric', 
+            month: 'short', 
+            day: 'numeric' 
+        });
+        document.getElementById('uploadDate').textContent = `(Uploaded: ${formattedDate})`;
+
         // Handle iframe load errors
         const pdfFrame = document.getElementById('pdfFrame');
         
