@@ -4,10 +4,13 @@
     <title>7701Y State</title>
     <link href="https://fonts.googleapis.com/css2?family=Lexend:wght@400;700&display=swap" rel="stylesheet">
     <style>
-        body {
-            font-family: 'Lexend', sans-serif;
+        * {
             margin: 0;
             padding: 0;
+            box-sizing: border-box;
+        }
+        body {
+            font-family: 'Lexend', sans-serif;
             background-color: #000;
         }
         .container {
@@ -27,6 +30,7 @@
             box-shadow: 0 2px 4px rgba(0,0,0,0.1);
             z-index: 100;
             position: relative;
+            flex-shrink: 0;
         }
         h1 {
             margin: 0;
@@ -58,7 +62,7 @@
             height: 100%;
             border: none;
             display: block;
-            margin-top: -40px;
+            margin-top: -60px;
         }
     </style>
 </head>
