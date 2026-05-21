@@ -137,27 +137,31 @@
             {
                 title: '7701Y State',
                 file: './pdfs/7701Y%20State-compressed.pdf',
-                urlPath: '7701Y-State',
                 lastUpdated: '2026-05-21T19:01:59Z'
             },
             {
                 title: '7701S Notebook',
                 file: './pdfs/7701S%205-21-26-compressed.pdf',
-                urlPath: '7701S-Notebook',
                 lastUpdated: '2026-05-21T19:02:49Z'
             }
             // Add more notebooks like this:
             // {
             //     title: 'Notebook Name',
             //     file: './path/to/filename.pdf',
-            //     urlPath: 'url-path-name',
             //     lastUpdated: 'YYYY-MM-DDTHH:MM:SSZ'
             // }
         ];
         // ================================================
 
-        // Get the base path (for GitHub Pages support)
-        const baseURL = window.location.pathname.split('/').slice(0, -1).join('/');
+        // Get notebook from URL query parameter
+        function getNotebookFromURL() {
+            const params = new URLSearchParams(window.location.search);
+            const notebookParam = params.get('notebook');
+            const index = notebookParam ? parseInt(notebookParam) : 0;
+            
+            // Return valid index or default to 0
+            return (index >= 0 && index < notebooks.length) ? index : 0;
+        }
 
         // Populate dropdown with notebooks
         function initializeNotebooks() {
@@ -169,9 +173,6 @@
                 option.textContent = notebook.title;
                 select.appendChild(option);
             });
-            
-            // Load notebook from URL on page load
-            loadNotebookFromURL();
         }
 
         // Load notebook by index
@@ -191,34 +192,11 @@
             // Update dropdown selection
             document.getElementById('notebookSelect').value = index;
             
-            // Update URL without reloading page
-            const newURL = `${baseURL}/${notebook.urlPath}`;
-            window.history.pushState({notebookIndex: index}, notebook.title, newURL);
-            
             // Update page title
             document.title = `${notebook.title} - 7701 Notebooks`;
             
             // Reset error message
             document.getElementById('errorMessage').style.display = 'none';
-        }
-
-        // Load notebook from current URL
-        function loadNotebookFromURL() {
-            const currentPath = window.location.pathname;
-            
-            // Find matching notebook by URL path
-            let notebookIndex = 0; // Default to first notebook
-            
-            for (let i = 0; i < notebooks.length; i++) {
-                // Check for exact matches with the notebook's URL path
-                const notebookPath = notebooks[i].urlPath;
-                if (currentPath.includes(notebookPath)) {
-                    notebookIndex = i;
-                    break;
-                }
-            }
-            
-            loadNotebook(notebookIndex);
         }
 
         // Display the update date - static, no API calls
@@ -243,22 +221,18 @@
             }
         }
 
-        // Event listener for dropdown change
+        // Event listener for dropdown change - update URL query parameter
         document.getElementById('notebookSelect').addEventListener('change', (e) => {
-            loadNotebook(parseInt(e.target.value));
+            const index = parseInt(e.target.value);
+            loadNotebook(index);
+            // Update URL without reloading
+            window.history.pushState({}, '', `?notebook=${index}`);
         });
 
-        // Handle browser back/forward buttons
-        window.addEventListener('popstate', (e) => {
-            if (e.state && typeof e.state.notebookIndex === 'number') {
-                loadNotebook(e.state.notebookIndex);
-            } else {
-                loadNotebookFromURL();
-            }
-        });
-
-        // Initialize notebook list
+        // Initialize notebook list and load from URL
         initializeNotebooks();
+        const notebookIndex = getNotebookFromURL();
+        loadNotebook(notebookIndex);
 
         // Handle iframe load errors
         const pdfFrame = document.getElementById('pdfFrame');
