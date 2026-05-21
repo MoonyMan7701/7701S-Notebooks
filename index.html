@@ -83,19 +83,14 @@
             <iframe id="pdfFrame" src="./7701Y State-compressed.pdf"></iframe>
         </div>
     </div>
-
     <script>
         async function loadLatestPDF() {
             try {
-                // Fetch list of files in the pdfs folder
                 const response = await fetch('./pdfs/');
                 const text = await response.text();
-                
-                // Parse HTML to find PDF files
                 const parser = new DOMParser();
                 const doc = parser.parseFromString(text, 'text/html');
                 const links = doc.querySelectorAll('a');
-                
                 let pdfFiles = [];
                 links.forEach(link => {
                     const href = link.getAttribute('href');
@@ -103,13 +98,12 @@
                         pdfFiles.push(href);
                     }
                 });
-                
-                // Get the most recent PDF (last one in the list)
                 if (pdfFiles.length > 0) {
+                    // sort alphabetically (optional; depends on server ordering)
+                    pdfFiles.sort();
                     const latestPDF = pdfFiles[pdfFiles.length - 1];
                     const pdfPath = './pdfs/' + latestPDF;
-                    const pdfName = latestPDF.replace(/\.[^/.]+$/, ""); // Remove .pdf extension
-                    
+                    const pdfName = latestPDF.replace(/\.[^/.]+$/, "");
                     document.getElementById('pdfFrame').src = pdfPath;
                     document.getElementById('pdfTitle').textContent = pdfName;
                     document.getElementById('downloadBtn').href = pdfPath;
@@ -118,8 +112,6 @@
                 console.log('Could not load PDFs from folder, using default');
             }
         }
-        
-        // Load the latest PDF when page loads
         window.addEventListener('load', loadLatestPDF);
     </script>
 </body>
