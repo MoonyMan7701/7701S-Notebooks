@@ -77,41 +77,37 @@
     <div class="container">
         <div class="header">
             <h1 id="pdfTitle">7701Y State</h1>
-            <a id="downloadBtn" href="./7701Y State-compressed.pdf" download class="download-btn">Download PDF</a>
+            <a id="downloadBtn" href="./pdfs/7701Y State-compressed.pdf" download class="download-btn">Download PDF</a>
         </div>
         <div class="pdf-container">
-            <iframe id="pdfFrame" src="./7701Y State-compressed.pdf"></iframe>
+            <iframe id="pdfFrame" src="./pdfs/7701Y State-compressed.pdf"></iframe>
         </div>
     </div>
     <script>
-        async function loadLatestPDF() {
+        // List of PDFs in the /pdfs directory (you can update this list manually when adding new PDFs)
+        const pdfList = [
+            '7701Y State-compressed.pdf',
+            // Add more PDFs here as you create them
+        ];
+        
+        function loadLatestPDF() {
             try {
-                const response = await fetch('./pdfs/');
-                const text = await response.text();
-                const parser = new DOMParser();
-                const doc = parser.parseFromString(text, 'text/html');
-                const links = doc.querySelectorAll('a');
-                let pdfFiles = [];
-                links.forEach(link => {
-                    const href = link.getAttribute('href');
-                    if (href && href.endsWith('.pdf')) {
-                        pdfFiles.push(href);
-                    }
-                });
-                if (pdfFiles.length > 0) {
-                    // sort alphabetically (optional; depends on server ordering)
-                    pdfFiles.sort();
-                    const latestPDF = pdfFiles[pdfFiles.length - 1];
+                if (pdfList.length > 0) {
+                    // Sort alphabetically and get the latest (last) PDF
+                    pdfList.sort();
+                    const latestPDF = pdfList[pdfList.length - 1];
                     const pdfPath = './pdfs/' + latestPDF;
                     const pdfName = latestPDF.replace(/\.[^/.]+$/, "");
+                    
                     document.getElementById('pdfFrame').src = pdfPath;
                     document.getElementById('pdfTitle').textContent = pdfName;
                     document.getElementById('downloadBtn').href = pdfPath;
                 }
             } catch (error) {
-                console.log('Could not load PDFs from folder, using default');
+                console.log('Error loading PDF:', error);
             }
         }
+        
         window.addEventListener('load', loadLatestPDF);
     </script>
 </body>
