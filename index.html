@@ -2,7 +2,6 @@
 <html>
 <head>
     <title>7701Y State</title>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf_viewer.min.css" />
     <link href="https://fonts.googleapis.com/css2?family=Lexend:wght@400;700&display=swap" rel="stylesheet">
     <style>
         body {
@@ -26,6 +25,8 @@
             background-color: #333;
             color: white;
             box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            z-index: 10;
+            position: relative;
         }
         h1 {
             margin: 0;
@@ -47,35 +48,26 @@
         .download-btn:hover {
             background-color: #0056b3;
         }
-        #pdf-viewer {
+        .pdf-container {
             flex: 1;
-            overflow: auto;
-            background-color: #000;
-            padding: 20px;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-        }
-        .pdf-page {
+            overflow: hidden;
             position: relative;
-            margin: 20px 0;
-            background: white;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.3);
-            display: block;
-            scroll-margin-top: 80px;
         }
-        canvas {
-            display: block;
+        iframe {
             width: 100%;
-            height: auto;
+            height: 100%;
+            border: none;
+            display: block;
         }
-        .pdf-page a {
+        .toolbar-cover {
             position: absolute;
-            opacity: 0;
-            cursor: pointer;
-        }
-        .pdf-page a:hover {
-            outline: 2px solid blue;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 40px;
+            background-color: #fff;
+            z-index: 5;
+            pointer-events: none;
         }
     </style>
 </head>
@@ -85,144 +77,10 @@
             <h1>7701Y State</h1>
             <a href="./7701Y State-compressed.pdf" download class="download-btn">Download PDF</a>
         </div>
-        <div id="pdf-viewer"></div>
+        <div class="pdf-container">
+            <div class="toolbar-cover"></div>
+            <iframe src="./7701Y State-compressed.pdf"></iframe>
+        </div>
     </div>
-
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
-    <script>
-        const pdfjsLib = window['pdfjs-dist/build/pdf'];
-        pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
-
-        const pdfUrl = './7701Y State-compressed.pdf';
-        const viewer = document.getElementById('pdf-viewer');
-        let visiblePages = new Set();
-        let pdfDoc = null;
-        let pageElements = {};
-
-        pdfjsLib.getDocument(pdfUrl).promise.then(pdf => {
-            pdfDoc = pdf;
-            const observerOptions = {
-                root: viewer,
-                rootMargin: '100px',
-                threshold: 0.1
-            };
-
-            const observer = new IntersectionObserver((entries) => {
-                entries.forEach(entry => {
-                    if (entry.isIntersecting) {
-                        const pageNum = parseInt(entry.target.dataset.page);
-                        if (!visiblePages.has(pageNum)) {
-                            visiblePages.add(pageNum);
-                            renderPage(pdf, pageNum, entry.target);
-                        }
-                    }
-                });
-            }, observerOptions);
-
-            for (let pageNum = 1; pageNum <= pdf.numPages; pageNum++) {
-                const pageDiv = document.createElement('div');
-                pageDiv.className = 'pdf-page';
-                pageDiv.id = 'page-' + pageNum;
-                pageDiv.dataset.page = pageNum;
-                
-                const canvas = document.createElement('canvas');
-                pageDiv.appendChild(canvas);
-                
-                viewer.appendChild(pageDiv);
-                pageElements[pageNum] = pageDiv;
-                observer.observe(pageDiv);
-            }
-
-            function renderPage(pdf, pageNum, pageDiv) {
-                pdf.getPage(pageNum).then(page => {
-                    const viewport = page.getViewport({ scale: 1.5 });
-                    const canvas = pageDiv.querySelector('canvas');
-                    canvas.width = viewport.width;
-                    canvas.height = viewport.height;
-
-                    const context = canvas.getContext('2d');
-                    page.render({
-                        canvasContext: context,
-                        viewport: viewport
-                    }).promise.then(() => {
-                        return page.getAnnotations();
-                    }).then(annotations => {
-                        annotations.forEach(annotation => {
-                            if (annotation.subtype === 'Link') {
-                                const rect = annotation.rect;
-                                const viewport = page.getViewport({ scale: 1.5 });
-                                
-                                const link = document.createElement('a');
-                                link.style.left = (rect[0] * 1.5) + 'px';
-                                link.style.top = (viewport.height - rect[3] * 1.5) + 'px';
-                                link.style.width = ((rect[2] - rect[0]) * 1.5) + 'px';
-                                link.style.height = ((rect[3] - rect[1]) * 1.5) + 'px';
-                                
-                                // Handle internal links
-                                if (annotation.dest) {
-                                    link.href = '#';
-                                    link.onclick = (e) => {
-                                        e.preventDefault();
-                                        handleInternalLink(annotation.dest);
-                                    };
-                                } else if (annotation.url) {
-                                    // External links
-                                    link.href = annotation.url;
-                                    link.target = '_blank';
-                                }
-                                
-                                pageDiv.appendChild(link);
-                            }
-                        });
-                    });
-                });
-            }
-
-            function handleInternalLink(dest) {
-                if (typeof dest === 'string') {
-                    pdfDoc.getDestination(dest).then(resolveLink);
-                } else {
-                    resolveLink(dest);
-                }
-            }
-
-            function resolveLink(dest) {
-                if (!dest || dest.length === 0) return;
-                
-                const pageRef = dest[0];
-                
-                // Get page index from reference
-                let pageIndex = null;
-                if (typeof pageRef === 'number') {
-                    pageIndex = pageRef;
-                } else if (pageRef && typeof pageRef === 'object') {
-                    pdfDoc.getPageIndex(pageRef).then(idx => {
-                        scrollToPage(idx + 1);
-                    }).catch(() => {
-                        // Fallback: try to find page by reference
-                        for (let i = 1; i <= pdfDoc.numPages; i++) {
-                            pdfDoc.getPage(i).then(page => {
-                                if (page.ref === pageRef) {
-                                    scrollToPage(i);
-                                }
-                            });
-                        }
-                    });
-                    return;
-                }
-                
-                if (pageIndex !== null) {
-                    scrollToPage(pageIndex + 1);
-                }
-            }
-
-            function scrollToPage(pageNum) {
-                const pageElement = pageElements[pageNum];
-                if (pageElement) {
-                    pageElement.scrollIntoView({ behavior: 'smooth', block: 'start' });
-                }
-            }
-        });
-    </script>
 </body>
 </html>
