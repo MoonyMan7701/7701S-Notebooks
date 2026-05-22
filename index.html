@@ -155,20 +155,20 @@
             </div>
             <div class="controls">
                 <select id="notebookSelect" class="notebook-select">
-                    <option value="0">7701Y State</option>
+                    <option value="0">7701S Notebook</option>
                 </select>
-                <a id="downloadBtn" href="./pdfs/7701Y%20State-compressed.pdf" download class="download-btn">Download PDF</a>
+                <a id="downloadBtn" href="./pdfs/7701S%205-21-26-compressed.pdf" download class="download-btn">Download PDF</a>
             </div>
         </div>
         <div class="pdf-container">
-            <iframe id="pdfFrame" src="./pdfs/7701Y%20State-compressed.pdf"></iframe>
+            <iframe id="pdfFrame" src="./pdfs/7701S%205-21-26-compressed.pdf"></iframe>
             <div class="mobile-message" id="mobileMessage">
                 <p>📱 PDF viewer not supported on mobile</p>
-                <a id="mobileDlBtn" href="./pdfs/7701Y%20State-compressed.pdf" download class="download-btn">Download PDF</a>
+                <a id="mobileDlBtn" href="./pdfs/7701S%205-21-26-compressed.pdf" download class="download-btn">Download PDF</a>
             </div>
             <div class="error-message" id="errorMessage">
                 <p>Failed to load PDF. Please try downloading it instead.</p>
-                <a id="errorDlBtn" href="./pdfs/7701Y%20State-compressed.pdf" download class="download-btn">Download PDF</a>
+                <a id="errorDlBtn" href="./pdfs/7701S%205-21-26-compressed.pdf" download class="download-btn">Download PDF</a>
             </div>
         </div>
     </div>
@@ -176,16 +176,16 @@
         // ===== CONFIGURATION - Add/edit notebooks here =====
         const notebooks = [
             {
-                id: '7701y',
-                title: '7701Y State',
-                file: './pdfs/7701Y%20State-compressed.pdf',
-                lastUpdated: '2026-05-21T19:01:59Z'
-            },
-            {
                 id: '7701s',
                 title: '7701S Notebook',
                 file: './pdfs/7701S%205-21-26-compressed.pdf',
                 lastUpdated: '2026-05-21T19:02:49Z'
+            },
+            {
+                id: '7701y',
+                title: '7701Y State',
+                file: './pdfs/7701Y%20State-compressed.pdf',
+                lastUpdated: '2026-05-21T19:01:59Z'
             }
             // Add more notebooks like this:
             // {
